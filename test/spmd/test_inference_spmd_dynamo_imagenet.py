@@ -122,10 +122,14 @@ def inference_imagenet():
 
   device = xm.xla_device()
 <<<<<<< HEAD
+<<<<<<< HEAD
   model = torchvision.models.resnet50().to(device) # get_model_property('model_fn')().to(device)
 =======
   model = get_model_property('model_fn')().to(device)
 >>>>>>> Add ResNet & MNIST inference latency tests
+=======
+  model = torchvision.models.resnet50().to(device) # get_model_property('model_fn')().to(device)
+>>>>>>> Add latency experiment script
 
   input_mesh = None
   if FLAGS.sharding:
