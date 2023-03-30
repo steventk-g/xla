@@ -6,6 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 #    curl -L https://github.com/tensorflow/tensorflow/archive/<git hash>.tar.gz | sha256sum
 #    and update the sha256 with the result.
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Update WORKSPACE for CI testing
 http_archive(
     name = "org_tensorflow",
     patch_args = [
@@ -21,6 +24,7 @@ http_archive(
         "//tf_patches:stream_executor.diff",
         "//tf_patches:thread_local_random.diff",
         "//tf_patches:xplane.diff",
+<<<<<<< HEAD
         "//tf_patches:topk_rewriter.diff",
         "//tf_patches:local_rendezvous.diff",
         "//tf_patches:triton_filesystem.diff",
@@ -56,6 +60,13 @@ local_repository(
    name = "org_tensorflow",
    path = "/workspace/pytorch/xla/third_party/tensorflow",
 >>>>>>> Update workspace to fetch new TF pin
+=======
+    ],
+    strip_prefix = "tensorflow-99c036812fdf9bd5786cf5acaed427a925e95245",
+    urls = [
+        "https://github.com/tensorflow/tensorflow/archive/99c036812fdf9bd5786cf5acaed427a925e95245.tar.gz",
+    ],
+>>>>>>> Update WORKSPACE for CI testing
 )
 
 # For development, one often wants to make changes to the TF repository as well
