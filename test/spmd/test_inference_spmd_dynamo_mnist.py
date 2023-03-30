@@ -47,6 +47,8 @@ import os
 import numpy as np
 import time
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import torch_xla
@@ -70,62 +72,46 @@ for arg, value in default_value_dict.items():
     setattr(FLAGS, arg, value)
 
 
-def get_model_property(key):
-  default_model_property = {
-      'img_dim': 224,
-      'model_fn': getattr(torchvision.models, FLAGS.model)
-  }
-  model_properties = {
-      'inception_v3': {
-          'img_dim': 299,
-          'model_fn': lambda: torchvision.models.inception_v3(aux_logits=False)
-      },
-  }
-  model_fn = model_properties.get(FLAGS.model, default_model_property)[key]
-  return model_fn
+
+class MNIST(nn.Module):
+
+  def __init__(self):
+    super(MNIST, self).__init__()
+    self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
+    self.bn1 = nn.BatchNorm2d(10)
+    self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+    self.bn2 = nn.BatchNorm2d(20)
+    self.fc1 = nn.Linear(320, 50)
+    self.fc2 = nn.Linear(50, 10)
+
+  def forward(self, x):
+    x = F.relu(F.max_pool2d(self.conv1(x), 2))
+    x = self.bn1(x)
+    x = F.relu(F.max_pool2d(self.conv2(x), 2))
+    x = self.bn2(x)
+    x = torch.flatten(x, 1)
+    x = F.relu(self.fc1(x))
+    x = self.fc2(x)
+    return F.log_softmax(x, dim=1)
 
 
 def inference_imagenet():
   print('==> Preparing data..')
-  img_dim = get_model_property('img_dim')
+  img_dim = 28
   if FLAGS.fake_data:
     assert FLAGS.test_set_batch_size == 1
     test_loader = xu.SampleGenerator(
-        data=(torch.zeros(FLAGS.test_set_batch_size, 3, img_dim, img_dim),
+        data=(torch.zeros(FLAGS.test_set_batch_size, 1, img_dim, img_dim),
               torch.zeros(FLAGS.test_set_batch_size, dtype=torch.int64)),
         sample_count=FLAGS.sample_count // FLAGS.test_set_batch_size)
   else:
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    resize_dim = max(img_dim, 256)
-    test_dataset = torchvision.datasets.ImageFolder(
-        os.path.join(FLAGS.datadir, 'val'),
-        # Matches Torchvision's eval transforms except Torchvision uses size
-        # 256 resize for all models both here and in the train loader. Their
-        # version crashes during training on 299x299 images, e.g. inception.
-        transforms.Compose([
-            transforms.Resize(resize_dim),
-            transforms.CenterCrop(img_dim),
-            transforms.ToTensor(),
-            normalize,
-        ]))
-
-    # For single-host SPMD, no data sampler is needed.
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=FLAGS.test_set_batch_size,
-        sampler=None,
-        drop_last=FLAGS.drop_last,
-        shuffle=False)
+    # TODO real-data
+    pass
 
   torch.manual_seed(42)
 
   device = xm.xla_device()
-<<<<<<< HEAD
-  model = torchvision.models.resnet50().to(device) # get_model_property('model_fn')().to(device)
-=======
-  model = get_model_property('model_fn')().to(device)
->>>>>>> Add ResNet & MNIST inference latency tests
+  model = MNIST().to(device)
 
   input_mesh = None
   if FLAGS.sharding:

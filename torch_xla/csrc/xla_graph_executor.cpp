@@ -569,6 +569,7 @@ XLAGraphExecutor::ExecuteComputationWithBarrier(
   auto cachedComputation =
       XLAGraphExecutor::Get()->GetComputationCache()->Get(hash);
 <<<<<<< HEAD
+<<<<<<< HEAD
   TF_VLOG(5) << "Cached computation (hash: " << torch::lazy::HashToString(hash)
              << ") is_sharded=" << cachedComputation->is_sharded << std::endl;
 
@@ -576,6 +577,11 @@ XLAGraphExecutor::ExecuteComputationWithBarrier(
   std::cout << "*** cached computation, is_sharded? "
             << cachedComputation->is_sharded << std::endl;
 >>>>>>> [SPMD] integrate with Dynamo
+=======
+  TF_VLOG(5) << "Cached computation (hash: " << torch::lazy::HashToString(hash)
+             << ") is_sharded=" << cachedComputation->is_sharded << std::endl;
+
+>>>>>>> Add ResNet & MNIST inference latency tests
   // TODO implement a fallback mechanism, or make sure those entries
   // never get kicked out
   XLA_CHECK(cachedComputation)
@@ -595,9 +601,12 @@ XLAGraphExecutor::ExecuteComputationWithBarrier(
     placeholders.push_back(handle);
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   std::cout << "*** output placeholders ready!" << std::endl;
 >>>>>>> [SPMD] integrate with Dynamo
+=======
+>>>>>>> Add ResNet & MNIST inference latency tests
   // TODO(yeounoh) supply proper sharding specs for sharded results.
   std::vector<XLATensor::ShardingSpecPtr> sharding_specs(placeholders.size());
 
@@ -610,31 +619,30 @@ XLAGraphExecutor::ExecuteComputationWithBarrier(
     // extract the placeholder inserted by previous execution.
     TORCH_LAZY_TIMED("RunCachedGraphInputData");
     // setup the arguments
-    std::cout << "*** preparing arguments... " << std::endl;
     int idx = 0;
     for (auto& ivalue : graph_inputs) {
       torch::lazy::BackendDataPtr dataptr;
       if (auto xla_tensor_ptr = bridge::TryGetXlaTensor(ivalue.toTensor())) {
-        std::cout << "- GetXlaData ... ";
         dataptr = xla_tensor_ptr->GetXlaData();
       } else {
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         std::cout << "- TensorToXlaData ... ";
 >>>>>>> [SPMD] integrate with Dynamo
+=======
+>>>>>>> Add ResNet & MNIST inference latency tests
         XLA_CHECK(device.type() != (int8_t)XlaDeviceType::SPMD)
             << "SPMD device data should already be on the XLA backend "
                "(XLATensor).";
         dataptr = torch_xla::TensorToXlaData(ivalue.toTensor(), device);
       }
-      std::cout << " done! " << std::endl;
 
       ++idx;
       arguments.push_back(dataptr);
     }
   }
 
-  std::cout << "*** async ... " << std::endl;
   std::shared_ptr<XLAGraphExecutor::Async> async = std::make_shared<Async>(
       &coll, std::move(arguments), placeholders, std::move(cachedComputation));
 
