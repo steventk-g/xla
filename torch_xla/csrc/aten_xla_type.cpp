@@ -676,6 +676,11 @@ at::Tensor XLANativeFunctions::alias_copy(const at::Tensor& self) {
       tensor_methods::alias(bridge::GetXlaTensor(self)));
 }
 
+<<<<<<< HEAD
+=======
+std::shared_ptr<torch::lazy::Value> g_token;
+
+>>>>>>> Initial support for all_reduce
 std::shared_ptr<torch::lazy::Value> CreateToken(const torch::lazy::BackendDevice& device) {
   // This should be using xla::CreateToken() once we have added Token support to
   // XLA AllReduce(). Meanwhile we use a constant as token, and we handle it
@@ -706,12 +711,21 @@ AllReduceType GetReduceType(c10::string_view reduce_type) {
 }
 
 // TODO: Support tag.
+<<<<<<< HEAD
 at::Tensor all_reduce(const at::Tensor & self, c10::string_view reduceOp, c10::string_view /*tag*/, at::IntArrayRef ranks, int64_t group_size) {
   TORCH_LAZY_FN_COUNTER("xla::");
   auto self_tensor = bridge::GetXlaTensor(self);
 
   if (GetToken() == nullptr) {
     SetToken(CreateToken(self_tensor->GetDevice()));
+=======
+at::Tensor XLANativeFunctions::all_reduce(const at::Tensor & self, c10::string_view reduceOp, c10::string_view /*tag*/, at::IntArrayRef ranks, int64_t group_size) {
+  TORCH_LAZY_FN_COUNTER("xla::");
+  auto self_tensor = bridge::GetXlaTensor(self);
+
+  if (g_token == nullptr) {
+    g_token = CreateToken(self_tensor->GetDevice());
+>>>>>>> Initial support for all_reduce
   }
 
   // TODO: Use ranks and group_size to generate groups.
@@ -720,6 +734,7 @@ at::Tensor all_reduce(const at::Tensor & self, c10::string_view reduceOp, c10::s
   XLATensorPtr result;
   torch::lazy::Value new_token;
   std::tie(result, new_token) = tensor_methods::all_reduce(
+<<<<<<< HEAD
       self_tensor, *GetToken(), GetReduceType(reduceOp), 1.0,
       {}, true);
   SetToken(std::make_shared<torch::lazy::Value>(std::move(new_token)));
@@ -730,6 +745,14 @@ TORCH_LIBRARY_IMPL(c10d_functional, XLA, m) {
   m.impl("all_reduce", all_reduce);
 }
 
+=======
+      self_tensor, *g_token, GetReduceType(reduceOp), 1.0,
+      {}, true);
+  g_token = std::make_shared<torch::lazy::Value>(std::move(new_token));
+  return bridge::AtenFromXlaTensor(result);
+}
+
+>>>>>>> Initial support for all_reduce
 at::Tensor& XLANativeFunctions::arange_out(const at::Scalar& start,
                                            const at::Scalar& end,
                                            const at::Scalar& step,
