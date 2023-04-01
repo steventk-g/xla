@@ -8,8 +8,13 @@ index 7aa62c7aed3..8ef7422bbf4 100644
    };
 -  return Match(sort->operand(1), match_iota(data->shape().dimensions())) ||
 -         Match(sort->operand(1), m::Broadcast(match_iota(sort_dims)));
+<<<<<<< HEAD
 +  return Match(sort->operand(1), match_iota(absl::Span<const int64_t>(data->shape().dimensions().begin(), data->shape().dimensions().size()))) ||
 +         Match(sort->operand(1), m::Broadcast(match_iota(absl::Span<const int64_t>(sort_dims.begin(), sort_dims.size()))));
+=======
++  return Match(sort->operand(1), match_iota(absl::Span<const int64_t>(data->shape().dimensions()))) ||
++         Match(sort->operand(1), m::Broadcast(match_iota(absl::Span<const int64_t>(sort_dims))));
+>>>>>>> Add local_endezvous.diff and topk_rewriter.diff tf patches
  }
  
  std::optional<int64_t> TopkRewriter::SortIsInTopK(HloInstruction* inst) {
