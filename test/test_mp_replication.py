@@ -18,6 +18,7 @@ def _mp_fn(index):
     xtwos = twos.to(device)
     # xm.all_reduce(xm.REDUCE_SUM, [xones, xtwos])
 <<<<<<< HEAD
+<<<<<<< HEAD
     # xones = all_reduce(xones)
     # xtwos = all_reduce(xtwos)
     # xones = torch.ops.c10d_functional.all_reduce(xones, xm.REDUCE_SUM, "", [], 0)
@@ -29,9 +30,17 @@ def _mp_fn(index):
 =======
     xones = xm.all_reduce(xm.REDUCE_SUM, xones)
     xtwos = xm.all_reduce(xm.REDUCE_SUM, xtwos)
+=======
+    # xones = all_reduce(xones)
+    # xtwos = all_reduce(xtwos)
+>>>>>>> Support Dynamo
     # xones = torch._C._nn.all_reduce(xones, xm.REDUCE_SUM, "", [], 0)
     # xtwos = torch._C._nn.all_reduce(xtwos, xm.REDUCE_SUM, "", [], 0)
 >>>>>>> Initial support for all_reduce
+
+    compiled_all_reduce = torch.compile(all_reduce, backend='torchxla_trace_once', fullgraph=True)
+    xones = compiled_all_reduce(xones)
+    xtwos = compiled_all_reduce(xtwos)
 
     if (not xones.cpu().allclose(ones * float(world_size)) or
         not xtwos.cpu().allclose(twos * float(world_size))):

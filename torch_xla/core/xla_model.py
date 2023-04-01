@@ -588,6 +588,7 @@ def all_reduce(reduce_type,
   # device. That will skip the in graph reductions and use the torch.distributed
   # support across all XLA CPU devices.
 <<<<<<< HEAD
+<<<<<<< HEAD
   # if cctx is None:
   #   cctx = CollectiveContext(groups=groups)
   # if cctx.requires_intercore_reduce:
@@ -621,21 +622,22 @@ def all_reduce(reduce_type,
   if cctx is None:
     cctx = CollectiveContext(groups=groups)
   if cctx.requires_intercore_reduce:
+=======
+  # if cctx is None:
+  #   cctx = CollectiveContext(groups=groups)
+  # if cctx.requires_intercore_reduce:
+>>>>>>> Support Dynamo
     # token, devctx = _get_all_reduce_token()
-    if isinstance(inputs, torch.Tensor):
-      # result = torch_xla._XLAC._xla_all_reduce(reduce_type, inputs, token,
-      #                                          scale, cctx.intercore_group,
-      #                                          pin_layout)
-      # devctx.all_reduce_token = result[1]
-      # results = [result[0]]
-      result = torch._C._nn.all_reduce(inputs, reduce_type, "", [], 0)
-      results = [result]
-    else:
-      assert False, "Doesn't support inplace reduce."
-      devctx.all_reduce_token = torch_xla._XLAC._xla_all_reduce_inplace(
-          reduce_type, inputs, token, scale, cctx.intercore_group, pin_layout)
-      results = inputs
+  if isinstance(inputs, torch.Tensor):
+    # result = torch_xla._XLAC._xla_all_reduce(reduce_type, inputs, token,
+    #                                          scale, cctx.intercore_group,
+    #                                          pin_layout)
+    # devctx.all_reduce_token = result[1]
+    # results = [result[0]]
+    result = torch._C._nn.all_reduce(inputs, reduce_type, "", [], 0)
+    results = [result]
   else:
+<<<<<<< HEAD
     assert False, "Doesn't support interhost_reduce."
     if isinstance(inputs, torch.Tensor):
       results = [inputs.clone()]
@@ -648,6 +650,24 @@ def all_reduce(reduce_type,
     hscale = scale if cctx.replica_devcount <= 1 and scale != 1.0 else None
     _host_all_reduce(reduce_type, results, cctx, scale=hscale)
 >>>>>>> Initial support for all_reduce
+=======
+    assert False, "Doesn't support inplace reduce."
+    devctx.all_reduce_token = torch_xla._XLAC._xla_all_reduce_inplace(
+        reduce_type, inputs, token, scale, cctx.intercore_group, pin_layout)
+    results = inputs
+  # else:
+  #   assert False, "Doesn't support interhost_reduce."
+  #   if isinstance(inputs, torch.Tensor):
+  #     results = [inputs.clone()]
+  #   else:
+  #     results = inputs
+
+  # if cctx.requires_interhost_reduce:
+  #   assert False, "Doesn't support interhost_reduce."
+  #   assert groups is None, 'Groups are not supported in sea-of-devices mode'
+  #   hscale = scale if cctx.replica_devcount <= 1 and scale != 1.0 else None
+  #   _host_all_reduce(reduce_type, results, cctx, scale=hscale)
+>>>>>>> Support Dynamo
   return results[0] if isinstance(inputs, torch.Tensor) else results
 
 g_ordinal = 0
