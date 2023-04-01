@@ -25,6 +25,7 @@ http_archive(
         "//tf_patches:thread_local_random.diff",
         "//tf_patches:xplane.diff",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "//tf_patches:topk_rewriter.diff",
         "//tf_patches:local_rendezvous.diff",
         "//tf_patches:triton_filesystem.diff",
@@ -61,13 +62,22 @@ local_repository(
    path = "/workspace/pytorch/xla/third_party/tensorflow",
 >>>>>>> Update workspace to fetch new TF pin
 =======
+=======
+        "//tf_patches:topk_rewriter.diff",
+        "//tf_patches:local_rendezvous.diff",
+>>>>>>> Update WORKSPACE for testing
     ],
-    strip_prefix = "tensorflow-99c036812fdf9bd5786cf5acaed427a925e95245",
+    strip_prefix = "tensorflow-5e229cfaa3c13c389f864b0ed38877fb61936161",
     urls = [
-        "https://github.com/tensorflow/tensorflow/archive/99c036812fdf9bd5786cf5acaed427a925e95245.tar.gz",
+        "https://github.com/tensorflow/tensorflow/archive/5e229cfaa3c13c389f864b0ed38877fb61936161.tar.gz",
     ],
 >>>>>>> Update WORKSPACE for CI testing
 )
+
+# local_repository(
+#    name = "org_tensorflow",
+#    path = "/workspace/pytorch/xla/third_party/tensorflow",
+# )
 
 # For development, one often wants to make changes to the TF repository as well
 # as the PyTorch/XLA repository. You can override the pinned repository above with a
