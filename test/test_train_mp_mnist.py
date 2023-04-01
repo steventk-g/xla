@@ -181,7 +181,8 @@ def train_mnist(flags, **kwargs):
       total_samples += data.size()[0]
 
     accuracy = 100.0 * correct.item() / total_samples
-    accuracy = xm.mesh_reduce('test_accuracy', accuracy, np.mean)
+    # somehow hit a PJRT assertion, not sure why.
+    # accuracy = xm.mesh_reduce('test_accuracy', accuracy, np.mean)
     return accuracy
 
   train_device_loader = pl.MpDeviceLoader(train_loader, device)
