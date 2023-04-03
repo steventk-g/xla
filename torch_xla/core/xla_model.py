@@ -341,6 +341,7 @@ def set_replication(device, devices):
     torch_xla._XLAC._xla_set_replication_devices([])
     devctx.device_index = 0
   devctx.all_reduce_token = None
+  torch_xla._XLAC._reset_token()
   torch_xla._XLAC._xla_set_default_device(device)
 
 
@@ -961,6 +962,7 @@ def mark_step(wait=False):
     ms.save_metrics()
   devctx = _run_step_closures()
   devctx.all_reduce_token = None
+  torch_xla._XLAC._reset_token()
 
 
 def wait_device_ops(devices=[]):
