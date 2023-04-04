@@ -74,11 +74,6 @@ local_repository(
 >>>>>>> Update WORKSPACE for CI testing
 )
 
-# local_repository(
-#    name = "org_tensorflow",
-#    path = "/workspace/pytorch/xla/third_party/tensorflow",
-# )
-
 # For development, one often wants to make changes to the TF repository as well
 # as the PyTorch/XLA repository. You can override the pinned repository above with a
 # local checkout by either:

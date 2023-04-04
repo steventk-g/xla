@@ -10,6 +10,7 @@ index 7aa62c7aed3..8ef7422bbf4 100644
 -         Match(sort->operand(1), m::Broadcast(match_iota(sort_dims)));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 +  return Match(sort->operand(1), match_iota(absl::Span<const int64_t>(data->shape().dimensions().begin(), data->shape().dimensions().size()))) ||
 +         Match(sort->operand(1), m::Broadcast(match_iota(absl::Span<const int64_t>(sort_dims.begin(), sort_dims.size()))));
 =======
@@ -20,6 +21,10 @@ index 7aa62c7aed3..8ef7422bbf4 100644
 +  return Match(sort->operand(1), match_iota(absl::Span<const int64_t>(data->shape().dimensions().begin(), data->shape().dimensions().end()))) ||
 +         Match(sort->operand(1), m::Broadcast(match_iota(absl::Span<const int64_t>(sort_dims.begin(), sort_dims.end()))));
 >>>>>>> Update topk_rewriter.diff
+=======
++  return Match(sort->operand(1), match_iota(absl::Span<const int64_t>(data->shape().dimensions().begin(), data->shape().dimensions().size()))) ||
++         Match(sort->operand(1), m::Broadcast(match_iota(absl::Span<const int64_t>(sort_dims.begin(), sort_dims.size()))));
+>>>>>>> Update WORKSPACE to include triton_filesystem.diff
  }
  
  std::optional<int64_t> TopkRewriter::SortIsInTopK(HloInstruction* inst) {
