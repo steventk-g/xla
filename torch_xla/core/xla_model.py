@@ -747,8 +747,12 @@ def all_gather(value, dim=0, groups=None, output=None, pin_layout=True):
     participating replicas.
   """
 <<<<<<< HEAD
+<<<<<<< HEAD
   if pin_layout and xla_device_hw(
       value.device) in ('TPU', 'GPU', 'XPU') and output == None:
+=======
+  if pin_layout and output == None:
+>>>>>>> Workaround all_gather graph breaks
 =======
   if pin_layout and output == None:
 >>>>>>> Workaround all_gather graph breaks
