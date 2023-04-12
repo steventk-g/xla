@@ -324,8 +324,12 @@ std::vector<xla::Literal> PjRtComputationClient::TransferFromServer(
     auto new_handle = ReplicateShardedData(handle);
     const PjRtData& pjrt_data = dynamic_cast<const PjRtData&>(*new_handle);
 
+<<<<<<< HEAD
     xla::Shape target_shape = ShapeUtil::DeviceShapeToHostShape(
         pjrt_data.buffer->logical_on_device_shape().value());
+=======
+    xla::Shape target_shape = ShapeUtil::DeviceShapeToHostShape(pjrt_data.buffer->logical_on_device_shape().value());
+>>>>>>> Use `logical_on_device_shape` now that it's in libtpu
     auto& literal = literals.emplace_back(target_shape);
 
     // PJRT will always try to copy the full bounded size into our literal. If
@@ -460,10 +464,14 @@ PjRtComputationClient::ExecuteComputation(
 
   // Required as of cl/518733871
 <<<<<<< HEAD
+<<<<<<< HEAD
   execute_options.use_major_to_minor_data_layout_for_callbacks = true;
 =======
   execute_options.use_major_to_minor_data_layout_for_callbacks = true;  
 >>>>>>> Update PJRT use_major_to_minor_data_layout_for_callbacks flag to true
+=======
+  execute_options.use_major_to_minor_data_layout_for_callbacks = true;
+>>>>>>> Use `logical_on_device_shape` now that it's in libtpu
 
   std::optional<PjRtFuture<Status>> returned_future;
   std::vector<std::unique_ptr<xla::PjRtBuffer>> results =
@@ -535,10 +543,14 @@ PjRtComputationClient::ExecuteReplicated(
 
   // Required as of cl/518733871
 <<<<<<< HEAD
+<<<<<<< HEAD
   execute_options.use_major_to_minor_data_layout_for_callbacks = true;
 =======
   execute_options.use_major_to_minor_data_layout_for_callbacks = true;  
 >>>>>>> Update PJRT use_major_to_minor_data_layout_for_callbacks flag to true
+=======
+  execute_options.use_major_to_minor_data_layout_for_callbacks = true;
+>>>>>>> Use `logical_on_device_shape` now that it's in libtpu
 
   std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> results =
       pjrt_computation.executable->Execute(argument_handles, execute_options)
