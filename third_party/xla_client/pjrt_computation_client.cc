@@ -325,11 +325,16 @@ std::vector<xla::Literal> PjRtComputationClient::TransferFromServer(
     const PjRtData& pjrt_data = dynamic_cast<const PjRtData&>(*new_handle);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     xla::Shape target_shape = ShapeUtil::DeviceShapeToHostShape(
         pjrt_data.buffer->logical_on_device_shape().value());
 =======
     xla::Shape target_shape = ShapeUtil::DeviceShapeToHostShape(pjrt_data.buffer->logical_on_device_shape().value());
 >>>>>>> Use `logical_on_device_shape` now that it's in libtpu
+=======
+    xla::Shape target_shape = ShapeUtil::DeviceShapeToHostShape(
+        pjrt_data.buffer->logical_on_device_shape().value());
+>>>>>>> formatting
     auto& literal = literals.emplace_back(target_shape);
 
     // PJRT will always try to copy the full bounded size into our literal. If
@@ -340,11 +345,16 @@ std::vector<xla::Literal> PjRtComputationClient::TransferFromServer(
       XLA_CHECK_OK(pjrt_data.buffer->ToLiteralSync(&literal));
     } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
       xla::Shape bounded_shape = ShapeUtil::DeviceShapeToHostShape(
           pjrt_data.buffer->on_device_shape());
 =======
       xla::Shape bounded_shape = ShapeUtil::DeviceShapeToHostShape(pjrt_data.buffer->on_device_shape());
 >>>>>>> Allocate a literal with bounded shape in TransferFromServer
+=======
+      xla::Shape bounded_shape = ShapeUtil::DeviceShapeToHostShape(
+          pjrt_data.buffer->on_device_shape());
+>>>>>>> formatting
       xla::Literal bounded_literal(bounded_shape);
       XLA_CHECK_OK(pjrt_data.buffer->ToLiteralSync(&bounded_literal));
       XLA_CHECK_OK(literal.CopySliceFrom(
