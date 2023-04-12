@@ -339,8 +339,12 @@ std::vector<xla::Literal> PjRtComputationClient::TransferFromServer(
     if (pjrt_data.buffer->on_device_shape().is_static()) {
       XLA_CHECK_OK(pjrt_data.buffer->ToLiteralSync(&literal));
     } else {
+<<<<<<< HEAD
       xla::Shape bounded_shape = ShapeUtil::DeviceShapeToHostShape(
           pjrt_data.buffer->on_device_shape());
+=======
+      xla::Shape bounded_shape = ShapeUtil::DeviceShapeToHostShape(pjrt_data.buffer->on_device_shape());
+>>>>>>> Allocate a literal with bounded shape in TransferFromServer
       xla::Literal bounded_literal(bounded_shape);
       XLA_CHECK_OK(pjrt_data.buffer->ToLiteralSync(&bounded_literal));
       XLA_CHECK_OK(literal.CopySliceFrom(
