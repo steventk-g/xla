@@ -15,6 +15,7 @@ import torch_xla.debug.metrics_saver as ms
 import torch_xla.utils.utils as xu
 import torch_xla.utils.closures as xc
 import torch_xla.utils.keyd_queue as kq
+import torch.distributed._functional_collectives
 
 _DEVICES = xu.LazyProperty(lambda: torch_xla._XLAC._xla_get_devices())
 
@@ -340,6 +341,7 @@ def set_replication(device, devices):
     torch_xla._XLAC._xla_set_replication_devices([])
     devctx.device_index = 0
   devctx.all_reduce_token = None
+  torch_xla._XLAC._reset_token()
   torch_xla._XLAC._xla_set_default_device(device)
 
 
@@ -584,32 +586,44 @@ def all_reduce(reduce_type,
   # so in that case we create differente processes having a single replication
   # device. That will skip the in graph reductions and use the torch.distributed
   # support across all XLA CPU devices.
-  if cctx is None:
-    cctx = CollectiveContext(groups=groups)
-  if cctx.requires_intercore_reduce:
-    token, devctx = _get_all_reduce_token()
-    if isinstance(inputs, torch.Tensor):
-      result = torch_xla._XLAC._xla_all_reduce(reduce_type, inputs, token,
-                                               scale, cctx.intercore_group,
-                                               pin_layout)
-      devctx.all_reduce_token = result[1]
-      results = [result[0]]
-    else:
-      devctx.all_reduce_token = torch_xla._XLAC._xla_all_reduce_inplace(
-          reduce_type, inputs, token, scale, cctx.intercore_group, pin_layout)
-      results = inputs
+  # if cctx is None:
+  #   cctx = CollectiveContext(groups=groups)
+  # if cctx.requires_intercore_reduce:
+    # token, devctx = _get_all_reduce_token()
+  if isinstance(inputs, torch.Tensor):
+    # result = torch_xla._XLAC._xla_all_reduce(reduce_type, inputs, token,
+    #                                          scale, cctx.intercore_group,
+    #                                          pin_layout)
+    # devctx.all_reduce_token = result[1]
+    # results = [result[0]]
+    result = torch.ops.c10d_functional.all_reduce(inputs, reduce_type, "", [], 0)
+    results = [result]
   else:
-    if isinstance(inputs, torch.Tensor):
-      results = [inputs.clone()]
-    else:
-      results = inputs
+    assert False, "Doesn't support inplace reduce."
+    devctx.all_reduce_token = torch_xla._XLAC._xla_all_reduce_inplace(
+        reduce_type, inputs, token, scale, cctx.intercore_group, pin_layout)
+    results = inputs
+  # else:
+  #   assert False, "Doesn't support interhost_reduce."
+  #   if isinstance(inputs, torch.Tensor):
+  #     results = [inputs.clone()]
+  #   else:
+  #     results = inputs
 
-  if cctx.requires_interhost_reduce:
-    assert groups is None, 'Groups are not supported in sea-of-devices mode'
-    hscale = scale if cctx.replica_devcount <= 1 and scale != 1.0 else None
-    _host_all_reduce(reduce_type, results, cctx, scale=hscale)
+  # if cctx.requires_interhost_reduce:
+  #   assert False, "Doesn't support interhost_reduce."
+  #   assert groups is None, 'Groups are not supported in sea-of-devices mode'
+  #   hscale = scale if cctx.replica_devcount <= 1 and scale != 1.0 else None
+  #   _host_all_reduce(reduce_type, results, cctx, scale=hscale)
   return results[0] if isinstance(inputs, torch.Tensor) else results
 
+g_ordinal = 0
+g_world_size = 0
+def _init_ordinal_world_size():
+  global g_ordinal
+  global g_world_size
+  g_ordinal = get_ordinal()
+  g_world_size = xrt_world_size()
 
 def _all_gather_using_all_reduce(value, dim=0, groups=None, pin_layout=True):
   """Performs an all-gather operation using all-reduce along a given dimension.
@@ -634,13 +648,16 @@ def _all_gather_using_all_reduce(value, dim=0, groups=None, pin_layout=True):
     A tensor which has, in the ``dim`` dimension, all the values from the
     participating replicas.
   """
+  global g_ordinal
+  global g_world_size
+
   if dim < 0:
     dim = value.dim() + dim
   size = value.size(dim)
   padding = [0] * (2 * value.dim())
-  ordinal = get_ordinal()
+  ordinal = g_ordinal
   if groups is None:
-    left, right = ordinal, xrt_world_size() - 1 - ordinal
+    left, right = ordinal, g_world_size - 1 - ordinal
   else:
     ordinals = dict()
     for g in groups:
@@ -676,8 +693,7 @@ def all_gather(value, dim=0, groups=None, output=None, pin_layout=True):
     A tensor which has, in the ``dim`` dimension, all the values from the
     participating replicas.
   """
-  if pin_layout and xla_device_hw(
-      value.device) in ('TPU', 'GPU') and output == None:
+  if pin_layout and output == None:
     # There is not an easy way to pin the all_gather layout on TPU and GPU, use
     # all_reduce based all_gather for this purpose.
     return _all_gather_using_all_reduce(
@@ -955,6 +971,7 @@ def mark_step(wait=False):
     ms.save_metrics()
   devctx = _run_step_closures()
   devctx.all_reduce_token = None
+  torch_xla._XLAC._reset_token()
 
 
 def wait_device_ops(devices=[]):
@@ -985,13 +1002,14 @@ def reduce_gradients(optimizer, groups=None, pin_layout=True):
   count = max(cctx.replica_devcount, cctx.world_size)
   if count > 1:
     gradients = _fetch_gradients(optimizer)
-    all_reduce(
+    for gradient in gradients:
+      gradient = all_reduce(
         REDUCE_SUM,
-        gradients,
-        scale=1.0 / count,
+        gradient,
         groups=groups,
         cctx=cctx,
         pin_layout=pin_layout)
+      gradient /= count
 
 
 def optimizer_step(optimizer,

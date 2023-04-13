@@ -140,8 +140,8 @@ def train_mnist(flags, **kwargs):
 
   # Initialization is nondeterministic with multiple threads in PjRt.
   # Synchronize model parameters across replicas manually.
-  if pjrt.using_pjrt():
-    pjrt.broadcast_master_param(model)
+  # if pjrt.using_pjrt():
+  #   pjrt.broadcast_master_param(model)
 
   if flags.ddp:
     model = DDP(model, gradient_as_bucket_view=True)
