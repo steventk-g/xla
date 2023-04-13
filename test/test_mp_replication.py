@@ -23,6 +23,7 @@ def _mp_fn(index):
     # xtwos = all_reduce(xtwos)
     # xones = torch.ops.c10d_functional.all_reduce(xones, xm.REDUCE_SUM, "", [], 0)
     # xtwos = torch.ops.c10d_functional.all_reduce(xtwos, xm.REDUCE_SUM, "", [], 0)
+<<<<<<< HEAD
 
     compiled_all_reduce = torch.compile(all_reduce, backend='torchxla_trace_once', fullgraph=True)
     xones = compiled_all_reduce(xones)
@@ -37,6 +38,8 @@ def _mp_fn(index):
     # xones = torch._C._nn.all_reduce(xones, xm.REDUCE_SUM, "", [], 0)
     # xtwos = torch._C._nn.all_reduce(xtwos, xm.REDUCE_SUM, "", [], 0)
 >>>>>>> Initial support for all_reduce
+=======
+>>>>>>> Adopt new changes in upstream
 
     compiled_all_reduce = torch.compile(all_reduce, backend='torchxla_trace_once', fullgraph=True)
     xones = compiled_all_reduce(xones)

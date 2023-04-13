@@ -600,6 +600,7 @@ def all_reduce(reduce_type,
     # devctx.all_reduce_token = result[1]
     # results = [result[0]]
     result = torch.ops.c10d_functional.all_reduce(inputs, reduce_type, "", [], 0)
+<<<<<<< HEAD
     results = [result]
   else:
     assert False, "Doesn't support inplace reduce."
@@ -635,6 +636,8 @@ def all_reduce(reduce_type,
     # devctx.all_reduce_token = result[1]
     # results = [result[0]]
     result = torch._C._nn.all_reduce(inputs, reduce_type, "", [], 0)
+=======
+>>>>>>> Adopt new changes in upstream
     results = [result]
   else:
 <<<<<<< HEAD
